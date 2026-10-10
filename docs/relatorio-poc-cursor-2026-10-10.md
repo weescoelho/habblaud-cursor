@@ -10,7 +10,7 @@
 | POC | Objetivo | Resultado |
 | --- | -------- | --------- |
 | **P1** | Cobertura de eventos de hook | **Sucesso** — 15/15 eventos candidatos dispararam (`sim`) |
-| **P0** | Formato do `transcript_path` | **Sucesso parcial** — `jsonl` legível; tool-calls não detectados pelo inspetor |
+| **P0** | Formato do `transcript_path` | **Sucesso** — `jsonl` legível; tool-calls mapeados (**C1 ✅**, ver adendo no §P0) |
 | **P2** | Bloqueio e decisão (`allow`/`deny`) | **Sucesso** — stub até ~20 s; integração com Habblaud em 4747 validada |
 | **P3** | Agente `cursor` no escritório | **Sucesso** — ingest via API + `cursorEvents: true` |
 | **Gate** | `typecheck` + `npm test` | **Sucesso** — 1224 passed, 2 skipped |
@@ -73,7 +73,26 @@ Chaves:
   type  7
 ```
 
-**Critério P0:** arquivo legível com turnos (`user`/`assistant`); derivação de atividades só por transcript ainda limitada (sem campos de tool-call reconhecidos pelo inspetor — lacuna C1).
+**Critério P0 (1ª inspeção):** arquivo legível com turnos (`user`/`assistant`); os tool-calls ainda **não** eram reconhecidos pelo inspetor — lacuna C1.
+
+### Adendo — fechamento do C1 (mesmo dia)
+
+A 1ª inspeção não reconheceu tool-calls porque o inspetor só olhava o `content` **do topo** da linha;
+no Cursor os blocos vêm **aninhados** em `message.content`. A coleta seguinte (runbook
+`09-runbook-coleta-transcript-c1.md`; amostra crua em `resultado_test_c1.txt`) revelou o schema real:
+
+```json
+{"role":"assistant","message":{"content":[{"type":"text","text":"…"},{"type":"tool_use","name":"Shell","input":{"command":"npm test"}}]}}
+{"type":"turn_ended","status":"success"}
+```
+
+Ferramentas observadas na amostra: `Shell`, `Read`, `Write`, `StrReplace`, `Glob`, `Grep`,
+`CallDynamicTool`. O `server/sources/cursor/transcript.ts` foi ajustado para ler o `message`
+aninhado e o `describeCursorTool` passou a cobrir os nomes do transcript
+(`StrReplace`, `CallDynamicTool`, `Glob` com `glob_pattern`). O inspetor agora reporta
+**`Tool-calls: sim`** e o parser emite atividades legíveis. **C1 ✅** — a paridade de
+terminal/tarefas/tokens/histórico deixa de depender de um schema desconhecido e passa a ser
+trabalho de Fase 1. (Tokens já aparecem nos hooks `stop`/`afterAgentResponse`.)
 
 ---
 
@@ -168,5 +187,6 @@ npm run cursor:uninstall
 ## Próximos passos (fora deste relatório)
 
 - Revisão do relatório e go/no-go para P4–P8 (`.specs/STATE.md`).
-- Atualizar `07-poc-priorizados.md` (fora do fork) com achados de P0 (tool-calls no jsonl).
+- ~~Atualizar `07-poc-priorizados.md` (fora do fork) com achados de P0 (tool-calls no jsonl).~~ **feito**
+  (C1 ✅; schema em `message.content[]`, parser `transcript.ts` ajustado e testado).
 - Captura de tela do escritório durante `working` (entrega visual P3).

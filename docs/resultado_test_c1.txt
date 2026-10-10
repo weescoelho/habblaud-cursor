@@ -1,0 +1,96 @@
+### 05 — cursor:poc:transcript
+Formato: jsonl
+Linhas: 64
+Papéis: user, assistant
+Tool-calls: não
+Chaves:
+  message  56
+  role  56
+  status  8
+  type  8
+(node:54396) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+### 06 — shape
+# arquivo: /home/jcoelho3/.cursor/projects/home-jcoelho3-habblaud/agent-transcripts/6087c51e-41bd-4801-89c9-84ce7775c102/6087c51e-41bd-4801-89c9-84ce7775c102.jsonl
+# linhas: 64 (JSON invalido: 0)
+# formatos distintos (por chaves de topo): 2
+
+## formato 1  —  56 linha(s)  —  chaves: message,role
+role: string   ex: "user", "assistant"
+message: object
+  content: array
+    []: object
+      type: string   ex: "text", "tool_use"
+      text: string   ex: "[REDACTED]"
+      name: string   ex: "Grep", "CallDynamicTool", "Glob", "Read", "Shell", "StrReplace", "Write"
+      input: object
+        pattern: string   ex: "transcript", "planInstall|merge", "decisionTimeout", "/api/permissions", "GET.*permissions", "pendingId|pending", "permissions|pending", "listPending|pendingPermissions"
+        glob: string   ex: "**/*", "**/snapshot*"
+        head_limit: number
+        namespace: string   ex: "cursor-origin-readonly", "cursor"
+        toolName: string   ex: "list_namespaces", "list_repositories", "Await"
+        mcpDetails: object
+          description: string
+        arguments: object
+          namespace: string   ex: "uol-edtech-uol-cursos"
+          limit: number
+          duration: number
+        path: string   ex: "/home/jcoelho3/habblaud", "/home/jcoelho3/habblaud/package.json", "/home/jcoelho3/habblaud/transcript.json", "/home/jcoelho3/habblaud/scripts", "/home/jcoelho3/habblaud/docs", "/home/jcoelho3/habblaud/serena-dummy.txt", "/home/jcoelho3/habblaud/.specs/STATE.md", "/home/jcoelho3/habblaud/server"
+        glob_pattern: string   ex: "**/.cursor/**/*", "**/.specs/**/*", "*.txt", "**/poc*"
+        target_directory: string   ex: "/home/jcoelho3/habblaud", "/home/jcoelho3/habblaud/docs"
+        limit: number
+        offset: number
+        command: string
+        description: string   ex: "Show common wrong npm invocations", "Generate POC hook coverage matrix report", "P3: verify health and cursorEvents flag", "Refresh P1 coverage report tail", "Check if Habblaud dev server is up", "P3 full event cycle + negative API tests", "P2 decision harness 2s and 20s", "P1 full hook coverage matrix"
+        old_string: string   ex: "status: editado via MCP"
+        new_string: string   ex: "status: editado via agent (poc completa)"
+        block_until_ms: number
+        contents: string
+
+## formato 2  —  8 linha(s)  —  chaves: status,type
+type: string   ex: "turn_ended"
+status: string   ex: "success"
+
+### 06 — shape (EXAMPLES)
+# arquivo: /home/jcoelho3/.cursor/projects/home-jcoelho3-habblaud/agent-transcripts/6087c51e-41bd-4801-89c9-84ce7775c102/6087c51e-41bd-4801-89c9-84ce7775c102.jsonl
+# linhas: 64 (JSON invalido: 0)
+# formatos distintos (por chaves de topo): 2
+
+## formato 1  —  56 linha(s)  —  chaves: message,role
+role: string   ex: "user", "assistant"
+message: object
+  content: array
+    []: object
+      type: string   ex: "text", "tool_use"
+      text: string   ex: "[REDACTED]"
+      name: string   ex: "Grep", "CallDynamicTool", "Glob", "Read", "Shell", "StrReplace", "Write"
+      input: object
+        pattern: string   ex: "transcript", "planInstall|merge", "decisionTimeout", "/api/permissions", "GET.*permissions", "pendingId|pending", "permissions|pending", "listPending|pendingPermissions"
+        glob: string   ex: "**/*", "**/snapshot*"
+        head_limit: number
+        namespace: string   ex: "cursor-origin-readonly", "cursor"
+        toolName: string   ex: "list_namespaces", "list_repositories", "Await"
+        mcpDetails: object
+          description: string
+        arguments: object
+          namespace: string   ex: "uol-edtech-uol-cursos"
+          limit: number
+          duration: number
+        path: string   ex: "/home/jcoelho3/habblaud", "/home/jcoelho3/habblaud/package.json", "/home/jcoelho3/habblaud/transcript.json", "/home/jcoelho3/habblaud/scripts", "/home/jcoelho3/habblaud/docs", "/home/jcoelho3/habblaud/serena-dummy.txt", "/home/jcoelho3/habblaud/.specs/STATE.md", "/home/jcoelho3/habblaud/server"
+        glob_pattern: string   ex: "**/.cursor/**/*", "**/.specs/**/*", "*.txt", "**/poc*"
+        target_directory: string   ex: "/home/jcoelho3/habblaud", "/home/jcoelho3/habblaud/docs"
+        limit: number
+        offset: number
+        command: string
+        description: string   ex: "Show common wrong npm invocations", "Generate POC hook coverage matrix report", "P3: verify health and cursorEvents flag", "Refresh P1 coverage report tail", "Check if Habblaud dev server is up", "P3 full event cycle + negative API tests", "P2 decision harness 2s and 20s", "P1 full hook coverage matrix"
+        old_string: string   ex: "status: editado via MCP"
+        new_string: string   ex: "status: editado via agent (poc completa)"
+        block_until_ms: number
+        contents: string
+exemplo: {"role":"user","message":{"content":[{"type":"text","text":"<timestamp>Saturday, Oct 10, 2026, 2:03 PM (UTC-3)</timestam…"}]}}
+
+## formato 2  —  8 linha(s)  —  chaves: status,type
+type: string   ex: "turn_ended"
+status: string   ex: "success"
+exemplo: {"type":"turn_ended","status":"success"}

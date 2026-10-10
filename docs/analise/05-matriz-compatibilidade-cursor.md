@@ -13,7 +13,7 @@ Legenda de evidência: **F** fato (doc oficial/código), **H** hipótese, **?** 
 | Capacidade do Habblaud | Como funciona no Claude Code (F) | Superfície no Cursor | Veredito | Evidência / lacuna |
 | --- | --- | --- | --- | --- |
 | Presença de sessão aberta | `sessions/<pid>.json` (registro local) | Hooks `sessionStart`/`sessionEnd`; **sem** registro local conhecido | 🟡/🔴 | F: `cursor.com/docs/hooks`; **?** C2 |
-| Atividades ao vivo (o que faz agora) | Transcript JSONL + polling | Hooks `preToolUse`/`postToolUse`/`afterFileEdit`/`afterShellExecution`; `transcript_path` | ✅ (hooks) | F: hooks **confirmados na P1 (15 eventos)**; transcript JSONL legível, mas tool-calls por mapear (C1 🟡) |
+| Atividades ao vivo (o que faz agora) | Transcript JSONL + polling | Hooks `preToolUse`/`postToolUse`/`afterFileEdit`/`afterShellExecution`; `transcript_path` | ✅ (hooks) | F: hooks **confirmados na P1 (15 eventos)**; transcript JSONL legível e **tool-calls mapeados** — `message.content[].tool_use` (C1 ✅). Atividades deriváveis também do transcript |
 | Subagentes | Arquivos em `subagents/` + workflows | `subagentStart`/`subagentStop` (com `subagent_id`, `subagent_type`, `task`) | 🟡→✅ | F: `cursor.com/docs/hooks` |
 | Status `working` | `busy` no registro / turno aberto | `beforeSubmitPrompt`/`preToolUse`→working; `stop`→idle | 🟡 | F: hooks |
 | Status `waiting` ("precisa de você") | Registro `waiting` + hook `PermissionRequest` | `before*Execution` com `permission: ask`; sem `Notification`/`PermissionRequest` | 🔴 | F: `third-party-hooks` (**PermissionRequest: No**) |
@@ -24,14 +24,14 @@ Legenda de evidência: **F** fato (doc oficial/código), **H** hipótese, **?** 
 | "Sempre permitir" (regras) | `permission_suggestions` + `updatedPermissions` | Não há `updatedPermissions` documentado; `after*` podem editar config? | 🔴 | F: ausente na doc de hooks Cursor; **?** C4 |
 | Perguntas (`AskUserQuestion`) | Ferramenta + `answers` | Sem ferramenta/hook equivalente; `stop`.`followup_message` só continua | 🔴 | F/H; **?** C7 |
 | Mandar mensagens na sessão | `$.prompt.submit({text,asUser:true})` (mod) | Sem API pública de injeção; `followup_message` só em `stop`/`subagentStop` | 🔴/🟡 | F: hooks; **?** C7 |
-| Terminal (reconstrução da conversa) | Parser do transcript JSONL | Depende do `transcript_path` (existente, schema desconhecido) | 🟡/🔴 | F: `transcript_path` na doc; **?** C1 |
-| Histórico de sessões (7 dias) | Varredura de `projects/` | Depende do transcript / armazenamento do Cursor | 🟡/🔴 | **?** C1/C8 |
-| Tarefas (checklist) | Do transcript | Não há hook de tarefas; provavelmente do transcript | 🟡/🔴 | **?** C1 |
-| Tokens / custo | Do transcript | Depende do transcript | 🟡/🔴 | **?** C1 |
+| Terminal (reconstrução da conversa) | Parser do transcript JSONL | `transcript_path` JSONL (schema **mapeado**); hooks dão o ao vivo | 🟡 | **C1 ✅** (2026-10-10): `transcript.ts` lê `{role,message:{content:[…]}}`; terminal completo é trabalho de Fase 1 |
+| Histórico de sessões (7 dias) | Varredura de `projects/` | Transcript por conversa em `~/.cursor/projects/*/agent-transcripts/` | 🟡 | **C1 ✅**; **C8** (`conversation_id`↔transcript) por mapear na Fase 1 |
+| Tarefas (checklist) | Do transcript | Não há hook de tarefas; viria do transcript | 🟡 | **C1 ✅**; nenhuma ferramenta de tarefas observada na amostra — a confirmar na Fase 1 |
+| Tokens / custo | Do transcript | Hooks `stop`/`afterAgentResponse` trazem `input_tokens`/`output_tokens`/`cache_read_tokens`/`cache_write_tokens` | ✅ (hooks) | F: relatório P1 (campos de tokens nos hooks) |
 | Uso do plano (5h/semanal) | Mod/statusline `rate_limits` | Sem fonte local documentada | 🔴 | **?** C6/C10 |
 | Múltiplas contas | Config dirs `~/.claude*` | Cursor é essencialmente 1 usuário/conta (`user_email`) | ⚪/🟡 | F: `user_email` no hook |
 | Contas/uso no topo | `AccountsService` | Sem equivalente; pode omitir o cartão | ⚪ | — |
-| Eventos do GitHub | Do transcript | Depende do transcript (`gh`/`git`) | 🟡/🔴 | **?** C1/C11 |
+| Eventos do GitHub | Do transcript | Depende do transcript (`gh`/`git`) | 🟡 | **C1 ✅** (tool-calls no transcript); **C11 ✅** (`tool_name` estável) |
 | Editor de personagem / sala | `PUT /api/agents/:id/character` (local) | Reusa o servidor; independe da ferramenta | ✅ | — |
 | Timeline / "Meu dia" | Sobre o `Office` | Reusa o servidor | ✅ | — |
 | Selo de provedor na UI | `Provider` | Adicionar `'cursor'` | ✅ | — |
@@ -39,8 +39,10 @@ Legenda de evidência: **F** fato (doc oficial/código), **H** hipótese, **?** 
 
 > **POC P0–P3 (2026-10-10)**: hooks da IDE **confirmados** (15 eventos); decisão `allow`/`deny` **validada**
 > (bloqueio ~20 s medido; config 35 s; ≥30 s por medir); agente no escritório **OK**. O `transcript_path` é
-> **JSONL legível**, mas os **tool-calls** ainda não foram mapeados (C1 🟡), então terminal/tarefas/tokens/
-> histórico seguem 🟡. Relatório: `../relatorio-poc-cursor-2026-10-10.md`.
+> **JSONL legível** e os **tool-calls foram mapeados** (**C1 ✅**, no mesmo dia): vêm aninhados em
+> `message.content[].tool_use`; o `transcript.ts` lê o formato e o `describeCursorTool` traduz os nomes
+> (`Shell`/`StrReplace`/`CallDynamicTool`/`Glob`). Terminal/tarefas/tokens/histórico passam a ser trabalho
+> de Fase 1. Relatório: `../relatorio-poc-cursor-2026-10-10.md`; amostra: `../resultado_test_c1.txt`.
 
 ## 5.2 Mapa de hooks: Claude Code → Cursor (fato)
 

@@ -112,7 +112,7 @@ runtime.
 
 | # | Pergunta | Tipo | Por que importa |
 | --- | --- | --- | --- |
-| C1 | Qual o formato e o local real do arquivo apontado por `transcript_path`? É JSONL? Tem papéis/tool calls/subagentes? | P0: 🟡 parcial | Sem isso não há atividades, terminal, tarefas nem histórico |
+| C1 | Qual o formato e o local real do arquivo apontado por `transcript_path`? É JSONL? Tem papéis/tool calls/subagentes? | P0: ✅ | JSONL (`{role, message:{content:[{type,text\|tool_use,name,input}]}}` + `{type:"turn_ended"}`); tool-calls mapeados. Atividades/terminal/histórico viáveis na Fase 1 |
 | C2 | O Cursor grava algum "registro de sessões abertas" (equivalente a `sessions/<pid>.json`)? Onde? | ? | Define a detecção de presença sem hooks |
 | C3 | Quais eventos de hook realmente disparam na **IDE** (Cmd+K e Agent Chat) e no **CLI**? | P1: ✅ IDE (15 eventos); CLI: ? | Relatos: CLI dispara só shell hooks; IDE compatível com Claude hooks |
 | C4 | Um hook `beforeShellExecution`/`preToolUse` pode **bloquear esperando** (long-poll) a decisão do escritório e devolver `allow`/`deny`? Qual o timeout máximo? | P2: ✅ (~20 s medido; config 35 s); ≥30 s por medir | É o coração do "responder pelo escritório" |
@@ -128,6 +128,7 @@ runtime.
 > **Regra de trabalho**: nenhuma linha de `06-arquitetura-proposta.md` deve virar código sem que
 > as lacunas `C1`, `C3`, `C4`, `C7` tenham sido respondidas por uma PoC (ver `07-poc-priorizados.md`).
 >
-> **Situação (2026-10-10, POC P0–P3)**: `C3` ✅ e `C4` ✅ respondidas; `C11` ✅; `C1` 🟡 **parcial**
-> (JSONL legível, tool-calls por mapear); `C7` (injeção de mensagem) segue aberta (PoC P6). Relatório:
-> `../relatorio-poc-cursor-2026-10-10.md`.
+> **Situação (2026-10-10, POC P0–P3)**: `C1` ✅, `C3` ✅, `C4` ✅ e `C11` ✅ respondidas; `C7`
+> (injeção de mensagem) segue aberta (PoC P6). Relatório: `../relatorio-poc-cursor-2026-10-10.md`;
+> para o C1, a amostra do transcript está em `../resultado_test_c1.txt` (coleta pelo runbook
+> `09-runbook-coleta-transcript-c1.md`, dentro do fork).

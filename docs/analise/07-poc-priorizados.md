@@ -116,17 +116,19 @@ Cada PoC tem: **hipótese**, **método**, **critério de sucesso/falha**, **esfo
 
 | PoC | Resultado | Observações |
 | --- | --------- | ----------- |
-| **P0** transcript | **Sucesso parcial** | `transcript_path` → arquivo **JSONL** legível (60 linhas, papéis `user`/`assistant`). **Lacuna C1 permanece**: o inspetor não reconheceu campos de tool-call nas linhas — derivação de atividades só por transcript ainda limitada; dependemos de hooks para o rico. |
+| **P0** transcript | **Sucesso** | `transcript_path` → **JSONL** legível. Schema mapeado (**C1 ✅**, amostra de 64 linhas): `{"role":…,"message":{"content":[{"type":"text"\|"tool_use","name","input"}]}}` + marcadores `{"type":"turn_ended","status":…}`. Ferramentas: `Shell`, `Read`, `Write`, `StrReplace`, `Glob`, `Grep`, `CallDynamicTool`. Parser ajustado (`transcript.ts` lê o `message` aninhado; `describeCursorTool` traduz os nomes) — o harness agora reporta `Tool-calls: sim`. |
 | **P1** cobertura de hooks (IDE) | **Sucesso** | **15/15** eventos candidatos dispararam (`sim`) com `conversation_id`, `workspace_roots`, `cwd`, `model`, `user_email`, `transcript_path` etc. **`subagentStart`/`subagentStop` não observados** nesta rodada → ver P4. |
 | **P2** bloqueio do hook de decisão | **Sucesso (ressalva)** | Formato nativo `{"permission":"allow"\|"deny"}` validado; bloqueio medido até **~20 s** (cap do stub 25 s); configuração real `decisionTimeoutS: 35`; o critério de **≥30 s ao vivo** ainda não foi medido. |
 | **P3** ingest mínimo | **Sucesso** | `POST /api/cursor/events` → agente `provider:"cursor"` aparece na sala, muda de status (`working`/`idle`), some no `sessionEnd`; sem regressão em Claude/Codex. Casos negativos: 400 (body inválido), 403 (Host externo), `{ok:false}` (evento desconhecido). |
 
 **Ajustes do P0 em relação ao critério original:**
 
-- **C1** (formato do transcript): parcialmente respondida — é JSONL com turnos, mas **sem campos de
-  tool-call reconhecidos pelo inspetor** nos exemplos observados. O esqueleto
-  `server/sources/cursor/transcript.ts` permanece defensivo (cobre estilos OpenAI *e* Anthropic sem
-  lançar); a confirmação do schema depende de mais amostras do arquivo real.
+- **C1** (formato do transcript): **respondida ✅** (amostra coletada pelo runbook
+  `…/09-runbook-coleta-transcript-c1.md`, evidência `docs/resultado_test_c1.txt`). O arquivo é
+  JSONL e os **tool-calls vêm aninhados em `message.content`** (blocos `tool_use`), **não** no topo
+  da linha — era exatamente isso que o inspetor não reconhecia. O `server/sources/cursor/transcript.ts`
+  passou a ler **os dois contêineres** (topo *e* `message`) e o `describeCursorTool` cobre os nomes do
+  transcript (`Shell`, `StrReplace`, `CallDynamicTool`, `Glob` com `glob_pattern`).
 - **C2** (registro de sessões): continua aberta — presença segue 100% por hooks (`sessionStart`/`End`
   + fonte com `STALE_PRESENCE_MS`).
 
@@ -154,14 +156,13 @@ Implementar de verdade (Fase 1) **somente se**:
 - P0 (ou, na sua falta, P2) mostrar caminho para atividades/permissões.
 
 > **Veredicto de 2026-10-10: GO ✅** — as três condições foram atendidas ao vivo:
-> P1 15/15 hooks, P3 agente no escritório sem regressão, e P0 confirmou transcript JSONL
-> legível (atividades ricas ficam para a Fase 3, quando o schema C1 for confirmado).
-> **Só não iniciar Fase 1 sem fechar C1** se a paridade de atividades/terminal/histórico
-> for prometida como igual à do Claude Code — nesse caso, a modalidade comprovada hoje é
-> "hooks-first" (presença/status/permissões/subagentes), com transcript complementar.
+> P1 15/15 hooks, P3 agente no escritório sem regressão, e P0 confirmou o transcript JSONL
+> **com os tool-calls mapeados** (**C1 ✅**, fechado no mesmo dia). Com o C1 fechado, a paridade de
+> atividades/terminal/histórico deixa de depender de uma incógnita de schema e passa a ser trabalho
+> de Fase 1/3 — o `transcript.ts` já lê o formato real.
 
 Se **P0 falhar**, o subproduto ainda é viável em modo "hooks-only" (presença/status/subagentes/
 permissões), porém **sem** terminal, tarefas, tokens, GitHub e histórico no nível do Claude Code.
 Isso deve ser comunicado explicitamente antes de prometer paridade. Hoje (2026-10-10) o cenário é
-**parcial**: transcript JSONL legível, mas sem tool-calls reconhecidos (C1) — a promessa de
-paridade continua condicionada ao schema.
+**favorável**: transcript JSONL legível **com tool-calls mapeados** (**C1 ✅**) — a paridade passa a
+depender do esforço de implementação da Fase 1, não de um schema desconhecido.
