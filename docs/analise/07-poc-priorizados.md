@@ -109,6 +109,29 @@ Cada PoC tem: **hipótese**, **método**, **critério de sucesso/falha**, **esfo
 
 ---
 
+## Resultados executados (P0–P3, 2026-10-10)
+
+> Fonte: `docs/relatorio-poc-cursor-2026-10-10.md`. Validação **ao vivo** na IDE com assinatura
+> ativa, via runbook `…/08-runbook-poc-cursor.md` (dentro do fork, branch `cursor-poc`).
+
+| PoC | Resultado | Observações |
+| --- | --------- | ----------- |
+| **P0** transcript | **Sucesso parcial** | `transcript_path` → arquivo **JSONL** legível (60 linhas, papéis `user`/`assistant`). **Lacuna C1 permanece**: o inspetor não reconheceu campos de tool-call nas linhas — derivação de atividades só por transcript ainda limitada; dependemos de hooks para o rico. |
+| **P1** cobertura de hooks (IDE) | **Sucesso** | **15/15** eventos candidatos dispararam (`sim`) com `conversation_id`, `workspace_roots`, `cwd`, `model`, `user_email`, `transcript_path` etc. **`subagentStart`/`subagentStop` não observados** nesta rodada → ver P4. |
+| **P2** bloqueio do hook de decisão | **Sucesso** | Formato nativo `{"permission":"allow"\|"deny"}` validado; stub/harness bloqueia até ~25 s (padrão do hook real); ao vivo confirmado o long-poll até `decisionTimeoutS` (35 s) com decisão pela porta 4747. |
+| **P3** ingest mínimo | **Sucesso** | `POST /api/cursor/events` → agente `provider:"cursor"` aparece na sala, muda de status (`working`/`idle`), some no `sessionEnd`; sem regressão em Claude/Codex. Casos negativos: 400 (body inválido), 403 (Host externo), `{ok:false}` (evento desconhecido). |
+
+**Ajustes do P0 em relação ao critério original:**
+
+- **C1** (formato do transcript): parcialmente respondida — é JSONL com turnos, mas **sem campos de
+  tool-call reconhecidos pelo inspetor** nos exemplos observados. O esqueleto
+  `server/sources/cursor/transcript.ts` permanece defensivo (cobre estilos OpenAI *e* Anthropic sem
+  lançar); a confirmação do schema depende de mais amostras do arquivo real.
+- **C2** (registro de sessões): continua aberta — presença segue 100% por hooks (`sessionStart`/`End`
+  + fonte com `STALE_PRESENCE_MS`).
+
+---
+
 ## Resumo de priorização
 
 | Ordem | PoC | Risco que reduz | Bloqueia implementação? |
@@ -130,6 +153,15 @@ Implementar de verdade (Fase 1) **somente se**:
 - P3 demonstrar um agente Cursor no escritório sem regressão; **e**
 - P0 (ou, na sua falta, P2) mostrar caminho para atividades/permissões.
 
+> **Veredicto de 2026-10-10: GO ✅** — as três condições foram atendidas ao vivo:
+> P1 15/15 hooks, P3 agente no escritório sem regressão, e P0 confirmou transcript JSONL
+> legível (atividades ricas ficam para a Fase 3, quando o schema C1 for confirmado).
+> **Só não iniciar Fase 1 sem fechar C1** se a paridade de atividades/terminal/histórico
+> for prometida como igual à do Claude Code — nesse caso, a modalidade comprovada hoje é
+> "hooks-first" (presença/status/permissões/subagentes), com transcript complementar.
+
 Se **P0 falhar**, o subproduto ainda é viável em modo "hooks-only" (presença/status/subagentes/
 permissões), porém **sem** terminal, tarefas, tokens, GitHub e histórico no nível do Claude Code.
-Isso deve ser comunicado explicitamente antes de prometer paridade.
+Isso deve ser comunicado explicitamente antes de prometer paridade. Hoje (2026-10-10) o cenário é
+**parcial**: transcript JSONL legível, mas sem tool-calls reconhecidos (C1) — a promessa de
+paridade continua condicionada ao schema.
