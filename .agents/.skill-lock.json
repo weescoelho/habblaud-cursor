@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "skills": {
+    "nestjs-modular-monolith": {
+      "name": "nestjs-modular-monolith",
+      "source": "local",
+      "contentHash": "a4e6b084d0cb6ed7a06abc6786cea67292440c5b7e63ed33baed9ecb7525bbeb",
+      "installedAt": "2026-10-05T23:51:35.793Z",
+      "updatedAt": "2026-10-05T23:51:35.818Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "domain-analysis": {
+      "name": "domain-analysis",
+      "source": "local",
+      "contentHash": "5914beeaf1aa1fe57cd95cf0afb60ee1cccc58eedaddd123a43cad32d6a70077",
+      "installedAt": "2026-10-06T00:05:16.874Z",
+      "updatedAt": "2026-10-06T00:05:16.890Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    },
+    "tlc-spec-driven": {
+      "name": "tlc-spec-driven",
+      "source": "local",
+      "contentHash": "9f4c793556001f3210a2d9fe3b41bf24e82e581c522d8dd50f65addfee169a29",
+      "installedAt": "2026-10-07T23:46:11.502Z",
+      "updatedAt": "2026-10-07T23:46:11.539Z",
+      "agents": [
+        "cursor",
+        "claude-code",
+        "windsurf"
+      ],
+      "method": "copy",
+      "global": false
+    }
+  }
+}

@@ -1,0 +1,4 @@
+[submodule "projects/habblaud-main"]
+	path = projects/habblaud-main
+	url = https://github.com/weescoelho/habblaud.git
+	branch = cursor-poc
