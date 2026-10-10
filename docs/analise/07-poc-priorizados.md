@@ -118,7 +118,7 @@ Cada PoC tem: **hipótese**, **método**, **critério de sucesso/falha**, **esfo
 | --- | --------- | ----------- |
 | **P0** transcript | **Sucesso parcial** | `transcript_path` → arquivo **JSONL** legível (60 linhas, papéis `user`/`assistant`). **Lacuna C1 permanece**: o inspetor não reconheceu campos de tool-call nas linhas — derivação de atividades só por transcript ainda limitada; dependemos de hooks para o rico. |
 | **P1** cobertura de hooks (IDE) | **Sucesso** | **15/15** eventos candidatos dispararam (`sim`) com `conversation_id`, `workspace_roots`, `cwd`, `model`, `user_email`, `transcript_path` etc. **`subagentStart`/`subagentStop` não observados** nesta rodada → ver P4. |
-| **P2** bloqueio do hook de decisão | **Sucesso** | Formato nativo `{"permission":"allow"\|"deny"}` validado; stub/harness bloqueia até ~25 s (padrão do hook real); ao vivo confirmado o long-poll até `decisionTimeoutS` (35 s) com decisão pela porta 4747. |
+| **P2** bloqueio do hook de decisão | **Sucesso (ressalva)** | Formato nativo `{"permission":"allow"\|"deny"}` validado; bloqueio medido até **~20 s** (cap do stub 25 s); configuração real `decisionTimeoutS: 35`; o critério de **≥30 s ao vivo** ainda não foi medido. |
 | **P3** ingest mínimo | **Sucesso** | `POST /api/cursor/events` → agente `provider:"cursor"` aparece na sala, muda de status (`working`/`idle`), some no `sessionEnd`; sem regressão em Claude/Codex. Casos negativos: 400 (body inválido), 403 (Host externo), `{ok:false}` (evento desconhecido). |
 
 **Ajustes do P0 em relação ao critério original:**

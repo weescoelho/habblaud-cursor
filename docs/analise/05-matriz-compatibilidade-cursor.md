@@ -13,14 +13,14 @@ Legenda de evidência: **F** fato (doc oficial/código), **H** hipótese, **?** 
 | Capacidade do Habblaud | Como funciona no Claude Code (F) | Superfície no Cursor | Veredito | Evidência / lacuna |
 | --- | --- | --- | --- | --- |
 | Presença de sessão aberta | `sessions/<pid>.json` (registro local) | Hooks `sessionStart`/`sessionEnd`; **sem** registro local conhecido | 🟡/🔴 | F: `cursor.com/docs/hooks`; **?** C2 |
-| Atividades ao vivo (o que faz agora) | Transcript JSONL + polling | Hooks `preToolUse`/`postToolUse`/`afterFileEdit`/`afterShellExecution`; `transcript_path` | 🟡 | F: hooks; **?** C1 (schema do transcript) |
+| Atividades ao vivo (o que faz agora) | Transcript JSONL + polling | Hooks `preToolUse`/`postToolUse`/`afterFileEdit`/`afterShellExecution`; `transcript_path` | ✅ (hooks) | F: hooks **confirmados na P1 (15 eventos)**; transcript JSONL legível, mas tool-calls por mapear (C1 🟡) |
 | Subagentes | Arquivos em `subagents/` + workflows | `subagentStart`/`subagentStop` (com `subagent_id`, `subagent_type`, `task`) | 🟡→✅ | F: `cursor.com/docs/hooks` |
 | Status `working` | `busy` no registro / turno aberto | `beforeSubmitPrompt`/`preToolUse`→working; `stop`→idle | 🟡 | F: hooks |
 | Status `waiting` ("precisa de você") | Registro `waiting` + hook `PermissionRequest` | `before*Execution` com `permission: ask`; sem `Notification`/`PermissionRequest` | 🔴 | F: `third-party-hooks` (**PermissionRequest: No**) |
 | Status `shell` | Registro `shell` + notificações | `beforeShellExecution`/`afterShellExecution` | 🟡→✅ (melhor) | F: hooks |
 | Status `idle` | Registro `idle`/fim de turno | `stop`/`afterAgentResponse` | ✅ | F: hooks |
 | Status `done` (subagente) | Fim do subagente | `subagentStop` | ✅ | F: hooks |
-| Responder permissão (allow/deny) | Hook `PermissionRequest` + long-poll + `hookSpecificOutput.decision` | Hook de decisão (`beforeShellExecution`/`beforeMCPExecution`/`beforeReadFile`/`preToolUse`) com `permission: allow\|deny\|ask`, **long-poll possível** | 🟡/🔴 | F: hooks expõem decisão; **?** C4 (bloquear esperando/timeout) |
+| Responder permissão (allow/deny) | Hook `PermissionRequest` + long-poll + `hookSpecificOutput.decision` | Hook de decisão (`beforeShellExecution`/`beforeMCPExecution`/`beforeReadFile`/`preToolUse`) com `permission: allow\|deny\|ask`, **long-poll possível** | 🟡→✅ | F: hooks expõem decisão; **C4 ✅** na P2 (`allow`/`deny` validados, bloqueio ~20 s; config 35 s; ≥30 s por medir) |
 | "Sempre permitir" (regras) | `permission_suggestions` + `updatedPermissions` | Não há `updatedPermissions` documentado; `after*` podem editar config? | 🔴 | F: ausente na doc de hooks Cursor; **?** C4 |
 | Perguntas (`AskUserQuestion`) | Ferramenta + `answers` | Sem ferramenta/hook equivalente; `stop`.`followup_message` só continua | 🔴 | F/H; **?** C7 |
 | Mandar mensagens na sessão | `$.prompt.submit({text,asUser:true})` (mod) | Sem API pública de injeção; `followup_message` só em `stop`/`subagentStop` | 🔴/🟡 | F: hooks; **?** C7 |
@@ -36,6 +36,11 @@ Legenda de evidência: **F** fato (doc oficial/código), **H** hipótese, **?** 
 | Timeline / "Meu dia" | Sobre o `Office` | Reusa o servidor | ✅ | — |
 | Selo de provedor na UI | `Provider` | Adicionar `'cursor'` | ✅ | — |
 | Trava local (terminal/ações) | `HABBLAUD_TERMINAL` etc. | Reusa | ✅ | — |
+
+> **POC P0–P3 (2026-10-10)**: hooks da IDE **confirmados** (15 eventos); decisão `allow`/`deny` **validada**
+> (bloqueio ~20 s medido; config 35 s; ≥30 s por medir); agente no escritório **OK**. O `transcript_path` é
+> **JSONL legível**, mas os **tool-calls** ainda não foram mapeados (C1 🟡), então terminal/tarefas/tokens/
+> histórico seguem 🟡. Relatório: `../relatorio-poc-cursor-2026-10-10.md`.
 
 ## 5.2 Mapa de hooks: Claude Code → Cursor (fato)
 

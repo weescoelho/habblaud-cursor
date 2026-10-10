@@ -112,18 +112,22 @@ runtime.
 
 | # | Pergunta | Tipo | Por que importa |
 | --- | --- | --- | --- |
-| C1 | Qual o formato e o local real do arquivo apontado por `transcript_path`? É JSONL? Tem papéis/tool calls/subagentes? | ? | Sem isso não há atividades, terminal, tarefas nem histórico |
+| C1 | Qual o formato e o local real do arquivo apontado por `transcript_path`? É JSONL? Tem papéis/tool calls/subagentes? | P0: 🟡 parcial | Sem isso não há atividades, terminal, tarefas nem histórico |
 | C2 | O Cursor grava algum "registro de sessões abertas" (equivalente a `sessions/<pid>.json`)? Onde? | ? | Define a detecção de presença sem hooks |
-| C3 | Quais eventos de hook realmente disparam na **IDE** (Cmd+K e Agent Chat) e no **CLI**? | ? | Relatos: CLI dispara só shell hooks; IDE compatível com Claude hooks |
-| C4 | Um hook `beforeShellExecution`/`preToolUse` pode **bloquear esperando** (long-poll) a decisão do escritório e devolver `allow`/`deny`? Qual o timeout máximo? | ? | É o coração do "responder pelo escritório" |
+| C3 | Quais eventos de hook realmente disparam na **IDE** (Cmd+K e Agent Chat) e no **CLI**? | P1: ✅ IDE (15 eventos); CLI: ? | Relatos: CLI dispara só shell hooks; IDE compatível com Claude hooks |
+| C4 | Um hook `beforeShellExecution`/`preToolUse` pode **bloquear esperando** (long-poll) a decisão do escritório e devolver `allow`/`deny`? Qual o timeout máximo? | P2: ✅ (~20 s medido; config 35 s); ≥30 s por medir | É o coração do "responder pelo escritório" |
 | C5 | Como o Cursor modela "esperando o usuário"? Existe evento específico ou é o próprio hook de permissão? | ? | Define o status `waiting` |
 | C6 | Existe superfície de **uso/limites do plano** legível localmente (request counts, créditos)? | ? | O cartão de uso depende disso; pode não ter equivalente |
 | C7 | É possível **injetar uma mensagem** numa sessão viva (equivalente a `$.prompt.submit`)? `followup_message` só vale em `stop`/`subagentStop`? | ? | Define se "Mandar mensagens" é viável |
 | C8 | Como mapear `conversation_id` ↔ `session_id` ↔ transcript e o ciclo de vida de subagentes? | ? | Ids estáveis do `AgentInfo` |
 | C9 | O Cursor carrega hooks de **plugin/marketplace** ("Customize") e de hooks de terceiros juntos? Há conflito? | ? | Distribuição/instalação do hook |
 | C10 | Autenticação/uso: há API local para ler plano (Free/Pro/Business) e limites? | ? | Sem isso o cartão de uso fica vazio |
-| C11 | O Cursor expõe MCPs e Tools no `preToolUse` com nomes estáveis (`Shell`, `Read`, `Write`, `Grep`, `Task`)? | ? | Tradução de atividades e matchers |
+| C11 | O Cursor expõe MCPs e Tools no `preToolUse` com nomes estáveis (`Shell`, `Read`, `Write`, `Grep`, `Task`)? | P1: ✅ (`tool_name` estável) | Tradução de atividades e matchers |
 | C12 | `transcript_path` é estável entre turns? Aponta para o transcript da conversa inteira ou por geração? | ? | Tail incremental (`FileTail`) depende disso |
 
 > **Regra de trabalho**: nenhuma linha de `06-arquitetura-proposta.md` deve virar código sem que
 > as lacunas `C1`, `C3`, `C4`, `C7` tenham sido respondidas por uma PoC (ver `07-poc-priorizados.md`).
+>
+> **Situação (2026-10-10, POC P0–P3)**: `C3` ✅ e `C4` ✅ respondidas; `C11` ✅; `C1` 🟡 **parcial**
+> (JSONL legível, tool-calls por mapear); `C7` (injeção de mensagem) segue aberta (PoC P6). Relatório:
+> `../relatorio-poc-cursor-2026-10-10.md`.
