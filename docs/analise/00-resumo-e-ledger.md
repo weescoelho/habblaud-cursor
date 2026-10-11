@@ -114,11 +114,11 @@ runtime.
 | --- | --- | --- | --- |
 | C1 | Qual o formato e o local real do arquivo apontado por `transcript_path`? É JSONL? Tem papéis/tool calls/subagentes? | P0: ✅ | JSONL (`{role, message:{content:[{type,text\|tool_use,name,input}]}}` + `{type:"turn_ended"}`); tool-calls mapeados. Atividades/terminal/histórico viáveis na Fase 1 |
 | C2 | O Cursor grava algum "registro de sessões abertas" (equivalente a `sessions/<pid>.json`)? Onde? | ? | Define a detecção de presença sem hooks |
-| C3 | Quais eventos de hook realmente disparam na **IDE** (Cmd+K e Agent Chat) e no **CLI**? | P1: ✅ IDE (15 eventos); CLI: ? | Relatos: CLI dispara só shell hooks; IDE compatível com Claude hooks |
+| C3 | Quais eventos de hook realmente disparam na **IDE** (Cmd+K e Agent Chat) e no **CLI**? | P1: ✅ IDE (15 eventos); CLI: instrumentado (P5) | Relatos: CLI dispara só shell hooks; IDE compatível com Claude hooks. O harness caracteriza o NDJSON do `cursor-agent` (ao vivo pendente) |
 | C4 | Um hook `beforeShellExecution`/`preToolUse` pode **bloquear esperando** (long-poll) a decisão do escritório e devolver `allow`/`deny`? Qual o timeout máximo? | P2: ✅ (~20 s medido; config 35 s); ≥30 s por medir | É o coração do "responder pelo escritório" |
 | C5 | Como o Cursor modela "esperando o usuário"? Existe evento específico ou é o próprio hook de permissão? | ? | Define o status `waiting` |
-| C6 | Existe superfície de **uso/limites do plano** legível localmente (request counts, créditos)? | ? | O cartão de uso depende disso; pode não ter equivalente |
-| C7 | É possível **injetar uma mensagem** numa sessão viva (equivalente a `$.prompt.submit`)? `followup_message` só vale em `stop`/`subagentStop`? | ? | Define se "Mandar mensagens" é viável |
+| C6 | Existe superfície de **uso/limites do plano** legível localmente (request counts, créditos)? | P8: ❌ (provável) | Nenhuma fonte de primeira parte casou no `usage`; só config/telemetria e `plans/` (plan mode) → ocultar o cartão de uso |
+| C7 | É possível **injetar uma mensagem** numa sessão viva (equivalente a `$.prompt.submit`)? `followup_message` só vale em `stop`/`subagentStop`? | P6: 🟡 (forma validada; efeito ao vivo pendente) | O probe devolve `{"followup_message": …}` no `stop`; falta a injeção real na IDE → define se "Mandar mensagens" é viável |
 | C8 | Como mapear `conversation_id` ↔ `session_id` ↔ transcript e o ciclo de vida de subagentes? | ? | Ids estáveis do `AgentInfo` |
 | C9 | O Cursor carrega hooks de **plugin/marketplace** ("Customize") e de hooks de terceiros juntos? Há conflito? | ? | Distribuição/instalação do hook |
 | C10 | Autenticação/uso: há API local para ler plano (Free/Pro/Business) e limites? | ? | Sem isso o cartão de uso fica vazio |
@@ -132,3 +132,10 @@ runtime.
 > (injeção de mensagem) segue aberta (PoC P6). Relatório: `../relatorio-poc-cursor-2026-10-10.md`;
 > para o C1, a amostra do transcript está em `../resultado_test_c1.txt` (coleta pelo runbook
 > `09-runbook-coleta-transcript-c1.md`, dentro do fork).
+>
+> **Situação (2026-10-11, POC P4–P8)**: harness entregue (`usage`/`subagents`/`cli`/`followup`/`history`
+> + probe de followup) e **validado contra o export real** no que não exige a IDE: **`C6`** (uso/limites)
+> → **❌ provável** (ocultar o cartão); **`C7`** (injeção) → **🟡** (forma validada; efeito ao vivo por
+> medir); **P7** (histórico + efeitos) → **sucesso parcial**; **P4** (subagentes) → método corrigido,
+> **re-testar ao vivo**. Runbook: `10-runbook-poc-cursor-p4-p8.md` (dentro do fork); resultados em
+> `07-poc-priorizados.md`.

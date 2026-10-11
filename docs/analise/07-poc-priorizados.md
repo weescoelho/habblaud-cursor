@@ -134,6 +134,31 @@ Cada PoC tem: **hipótese**, **método**, **critério de sucesso/falha**, **esfo
 
 ---
 
+## Resultados executados (P4–P8, 2026-10-11)
+
+> Fonte: harness local (`scripts/cursor-poc.ts` + `mod/habblaud-cursor/followup-hook.mjs`, branch
+> `cursor-poc`) e a leitura já feita sobre o export real do usuário. Runbook: `10-runbook-poc-cursor-p4-p8.md`
+> (dentro do fork). **Privacidade**: a evidência abaixo só tem contagens/rótulos/nomes de ferramenta —
+> caminhos/projetos reais do export não entram em commits.
+
+| PoC | Resultado | Observações |
+| --- | --------- | ----------- |
+| **P4** subagentes | **Instrumentado (método corrigido); validação ao vivo pendente** | A rodada P0–P3 não instalava `subagentStart`/`subagentStop` — o "não observado" era **artefato do método**, não resposta. O `install` agora instala **17 eventos** e o `cursor:poc:subagents` correlaciona `Start`↔`Stop` por id. Sobre a captura real (~1.783 eventos, 0 linhas ruins, anterior à correção) segue "não observado", mas o transcript mostra uso de `Task` (`mcp__cursor__Task`) → há subagente sem hook correlacionável nessa amostra. **Re-testar pelo runbook `10`.** |
+| **P5** CLI headless | **Instrumentado; validação ao vivo pendente** | `cursor:poc:cli` caracteriza o NDJSON (`session_id`, tipos, ferramentas, linhas ilegíveis). O CLI `cursor-agent` está instalado; falta só o NDJSON real (runbook `10`). |
+| **P6** injeção de mensagem | **Forma validada; efeito real pendente** | O probe `followup-hook.mjs` devolve `{"followup_message": …}` no `stop` (validado por `cursor:poc:followup`, inclusive falha barulhenta para saída inválida). A **injeção real** exige instalar o probe à mão no `stop` (runbook `10`); até lá, **C7** segue aberta. |
+| **P7** histórico/GitHub | **Sucesso (parcial)** | `cursor:poc:history` reconstruiu **2 sessões** reais (**25** e **9** turnos) com ferramentas (`Read`, `Glob`, `Grep`, `Write`, `StrReplace`, `Bash`, `GetDynamicTools`, `UpdateCurrentStep`, `AskQuestion`, `Task`), reusando o parser do transcript. Detecção de efeitos `git push`/`gh pr create`/`gh pr merge` **instrumentada** (0 na amostra). Histórico viável (Fase 4). |
+| **P8** uso/limites do plano | **Falha (provável) confirmada localmente** | `cursor:poc:usage` **não** achou fonte de primeira parte; `cli-config.json`/`storage.json` só têm config/telemetria; `plans/` é **plan mode**; o lead vivo é `ai-tracking/` (não confirmado). → **ocultar o cartão** para o Cursor (como previsto). |
+
+**Notas de método (P4/P8):**
+
+- **P4**: a correção de método (instalar os hooks de subagente) muda a pergunta de "o Cursor emite?"
+  para "o Cursor emite **quando instalado**?" — só o re-teste ao vivo responde.
+- **P8**: a ausência de fonte local é **resultado**, não lacuna: nenhum arquivo de primeira parte
+  casou no `usage`; os hits de "uso/plano" são arquivos de **projeto** (`plans/`, `planos.json`) e
+  telemetria (`statsig`).
+
+---
+
 ## Resumo de priorização
 
 | Ordem | PoC | Risco que reduz | Bloqueia implementação? |

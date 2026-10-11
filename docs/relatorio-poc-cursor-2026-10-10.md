@@ -184,9 +184,35 @@ npm run cursor:uninstall
 
 ---
 
+## Adendo — POC P4–P8 (2026-10-11)
+
+Rodada P4–P8 executada como **harness local** (branch `cursor-poc`): cinco subcomandos
+(`usage`/`subagents`/`cli`/`followup`/`history`) + o probe de followup, com gate verde
+(`typecheck` + `vitest` + `build`). Runbook: `docs/analise/10-runbook-poc-cursor-p4-p8.md`
+(dentro do fork).
+
+| POC | Objetivo | Resultado |
+| --- | -------- | --------- |
+| **P4** | Subagentes e ciclo de turno | **Instrumentado (método corrigido)** — o `install` agora instala `subagentStart`/`subagentStop` (17 eventos) e o `subagents` correlaciona por id; re-testar ao vivo |
+| **P5** | CLI headless como fonte alternativa | **Instrumentado** — o `cli` caracteriza o NDJSON; o CLI `cursor-agent` está instalado; falta o stream real |
+| **P6** | Injeção de mensagem (`stop.followup_message`) | **Forma validada** — o probe devolve `{"followup_message":…}`; o efeito real na IDE está por medir |
+| **P7** | Histórico e GitHub | **Sucesso (parcial)** — 2 sessões reais reconstruídas (25 e 9 turnos) com ferramentas; efeitos `git`/`gh` instrumentados |
+| **P8** | Uso/limites do plano | **Falha (provável) confirmada** — nenhuma fonte de primeira parte; **ocultar o cartão** |
+
+> **Privacidade**: a validação contra dados reais usou apenas contagens/rótulos/nomes de ferramenta
+> (`docs/cursor-export/` não entra em commits).
+
+Resultados completos e as ressalvas de método (P4) e de ausência de fonte (P8):
+`docs/analise/07-poc-priorizados.md` (seção "Resultados executados (P4–P8)") e
+`05-matriz-compatibilidade-cursor.md`.
+
+---
+
 ## Próximos passos (fora deste relatório)
 
-- Revisão do relatório e go/no-go para P4–P8 (`.specs/STATE.md`).
+- ~~Revisão do relatório e go/no-go para P4–P8 (`.specs/STATE.md`).~~ **feito** — harness P4–P8 entregue;
+  falta só a **validação ao vivo** (P4 re-teste, P5 stream, P6 injeção) pelo runbook `10`.
 - ~~Atualizar `07-poc-priorizados.md` (fora do fork) com achados de P0 (tool-calls no jsonl).~~ **feito**
   (C1 ✅; schema em `message.content[]`, parser `transcript.ts` ajustado e testado).
+- ~~Registrar P4–P8 em `07`/`00`/`05` e neste relatório.~~ **feito** (ver "Adendo — POC P4–P8").
 - Captura de tela do escritório durante `working` (entrega visual P3).
