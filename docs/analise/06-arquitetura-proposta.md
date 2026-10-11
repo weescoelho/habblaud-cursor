@@ -151,6 +151,13 @@ Sem `$.prompt.submit`, não há injeção confiável de mensagem numa sessão vi
 > viram observação), aplicar regras locais `allow`/`deny` no hook e emular o "sempre permitir"
 > (`AD-002`). Roteiro/tarefas em `.specs/features/cursor-permissoes/`; operação no runbook `11`.
 
+> **Fase 3 — Transcript do Cursor** (implementada na branch `cursor-poc`): guardar o `transcript_path` por
+> conversa, abrir o terminal da sessão (`createCursorTerminalParser`, com user/assistant/tool/system),
+> acumular `tokensIn`/`tokensOut` no `AgentStats` e traduzir as ferramentas próprias do Cursor
+> (`GetDynamicTools`/`AskQuestion`/`UpdateCurrentStep` e o delegate `Task`). Ausências documentadas: o
+> transcript observado **não** traz `tool_result` (nenhuma entrada `result`) nem checklist (nenhum
+> `TaskItem` derivado). Roteiro/tarefas em `.specs/features/cursor-transcript/`.
+
 ## 6.9 Decisões em aberto (a fechar antes/junto do faseamento)
 
 - Formato/local real do `transcript_path` e periodicidade (C1/C12).
