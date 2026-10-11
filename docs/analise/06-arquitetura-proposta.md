@@ -158,6 +158,17 @@ Sem `$.prompt.submit`, não há injeção confiável de mensagem numa sessão vi
 > transcript observado **não** traz `tool_result` (nenhuma entrada `result`) nem checklist (nenhum
 > `TaskItem` derivado). Roteiro/tarefas em `.specs/features/cursor-transcript/`.
 
+> **Fase 4 — Subagentes, GitHub e histórico do Cursor** (implementada na branch `cursor-poc`): tratar os
+> hooks `subagentStart`/`subagentStop` na `CursorSource` (correlação por `subagent_id`, o
+> `parent_conversation_id` liga o sub ao pai, `subagent_type`→`role` e `task`→`title`; órfãos/sem id
+> degradam para no-op e o `poll` expira o sub preso), detectar `git push`/`gh pr create`/`gh pr merge` nos
+> `tool_use` `Shell` do transcript por um pump incremental (`FileTail`, `seekEnd` no 1º attach;
+> `cursor/github.ts` reusa as regras do Claude/Codex) e listar/reabrir as conversas encerradas num
+> `CursorHistory` (transcripts `~/.cursor/projects/<slug>/agent-transcripts/<id>/<id>.jsonl`, registrado no
+> `HistorySet` só com `config.cursor`). Limitação documentada (v1): o transcript não grava `tool_result`,
+> então a detecção por comando **não confirma o sucesso** (pode haver falso positivo) e CI/release não são
+> emitidos. Roteiro/tarefas em `.specs/features/cursor-subagents-history/`.
+
 ## 6.9 Decisões em aberto (a fechar antes/junto do faseamento)
 
 - Formato/local real do `transcript_path` e periodicidade (C1/C12).
