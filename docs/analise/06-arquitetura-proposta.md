@@ -101,13 +101,14 @@ stdout { "permission": "allow" | "deny", "user_message": "...", "agent_message":
   `PermissionRequestInfo` cobre `allow`/`deny`/`message`.
 - **Limitações vs Claude**: sem `updatedPermissions` e sem `AskUserQuestion`; `interrupt` não
   tem equivalente → v1 suporta **allow/deny + motivo**. O "sempre permitir" é **emulado** por uma
-  política local lida pelo hook (ver `.specs/features/cursor-permissoes/`; `AD-002`).
+  política local (`rules` em `~/.habblaud/cursor-hook.json`, escritas pelo servidor e lidas pelo
+  hook) — ver `.specs/features/cursor-permissoes/`, `AD-002` e o runbook `11`.
 - **Risco**: se o hook não puder esperar (timeout curto), o Habblaud só observa e o terminal
   decide (degradação) — validar em **P2**.
 
-> Observação: o Cursor **também** tem a ferramenta `Task` e `beforeReadFile`; o hook de permissão
-> cobre shell, MCP e arquivo. `preToolUse` (com `permission: ask`, não aplicado hoje) é candidato
-> futuro para permissões genéricas.
+> Observação: o Cursor **também** tem a ferramenta `Task` e `beforeReadFile`; por padrão o hook de
+> decisão só pede em shell e MCP (`beforeReadFile`/`preToolUse` viram observação; reative com
+> `decisionEvents`). `preToolUse` segue candidato futuro para permissões genéricas.
 
 ## 6.5 Uso do plano e contas
 
@@ -145,9 +146,9 @@ Sem `$.prompt.submit`, não há injeção confiável de mensagem numa sessão vi
 | 4 | Subagentes, GitHub, histórico | P4/P7 |
 | 5 | Uso do plano / mensagens (se viável) | P8/P6 |
 
-> **Fase 2b — Fluxo de permissão sem travar** (planejada, não iniciada): cortar os eventos que pedem
-> decisão (padrão: só `beforeShellExecution`/`beforeMCPExecution`; `preToolUse`/`beforeReadFile` viram
-> observação), aplicar regras locais `allow`/`deny` no hook e emular o "sempre permitir"
+> **Fase 2b — Fluxo de permissão sem travar** (implementada na branch `cursor-poc`): cortar os eventos
+> que pedem decisão (padrão: só `beforeShellExecution`/`beforeMCPExecution`; `preToolUse`/`beforeReadFile`
+> viram observação), aplicar regras locais `allow`/`deny` no hook e emular o "sempre permitir"
 > (`AD-002`). Roteiro/tarefas em `.specs/features/cursor-permissoes/`; operação no runbook `11`.
 
 ## 6.9 Decisões em aberto (a fechar antes/junto do faseamento)
