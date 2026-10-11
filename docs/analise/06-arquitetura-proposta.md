@@ -99,9 +99,9 @@ stdout { "permission": "allow" | "deny", "user_message": "...", "agent_message":
 
 - **Reuso**: `PermissionRegistry` é agnóstico (já aceita `provider`/`account`);
   `PermissionRequestInfo` cobre `allow`/`deny`/`message`.
-- **Limitações vs Claude**: sem `updatedPermissions` ("sempre permitir") e sem
-  `AskUserQuestion`; `interrupt` e sugestões provavelmente não têm equivalente → v1 suporta
-  **allow/deny + motivo**.
+- **Limitações vs Claude**: sem `updatedPermissions` e sem `AskUserQuestion`; `interrupt` não
+  tem equivalente → v1 suporta **allow/deny + motivo**. O "sempre permitir" é **emulado** por uma
+  política local lida pelo hook (ver `.specs/features/cursor-permissoes/`; `AD-002`).
 - **Risco**: se o hook não puder esperar (timeout curto), o Habblaud só observa e o terminal
   decide (degradação) — validar em **P2**.
 
@@ -144,6 +144,11 @@ Sem `$.prompt.submit`, não há injeção confiável de mensagem numa sessão vi
 | 3 | Transcript: atividades ricas, terminal, tarefas, tokens | P0 |
 | 4 | Subagentes, GitHub, histórico | P4/P7 |
 | 5 | Uso do plano / mensagens (se viável) | P8/P6 |
+
+> **Fase 2b — Fluxo de permissão sem travar** (planejada, não iniciada): cortar os eventos que pedem
+> decisão (padrão: só `beforeShellExecution`/`beforeMCPExecution`; `preToolUse`/`beforeReadFile` viram
+> observação), aplicar regras locais `allow`/`deny` no hook e emular o "sempre permitir"
+> (`AD-002`). Roteiro/tarefas em `.specs/features/cursor-permissoes/`; operação no runbook `11`.
 
 ## 6.9 Decisões em aberto (a fechar antes/junto do faseamento)
 
