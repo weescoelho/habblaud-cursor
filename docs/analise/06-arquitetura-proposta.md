@@ -169,6 +169,13 @@ Sem `$.prompt.submit`, não há injeção confiável de mensagem numa sessão vi
 > então a detecção por comando **não confirma o sucesso** (pode haver falso positivo) e CI/release não são
 > emitidos. Roteiro/tarefas em `.specs/features/cursor-subagents-history/`.
 
+> **Fase 5 — Uso do plano e mensagens do Cursor** (implementada na branch `cursor-poc`): o Cursor não tem
+> fonte local de uso (P8: **🔴 confirmado**), então o **cartão de uso** fica oculto para a conta `cursor`
+> (`usageCardAccounts` no cliente — a conta segue no snapshot/statusline, conforme §6.5), e mensagens à
+> sessão **não são oferecidas** na v1 (`composerMode` → `off`, "Para responder, use o Cursor"; P6 validou
+> apenas a **forma** do `stop.followup_message`, efeito ao vivo pendente, lacuna C7). Roteiro/tarefas em
+> `.specs/features/cursor-uso-mensagens/`.
+
 ## 6.9 Decisões em aberto (a fechar antes/junto do faseamento)
 
 - Formato/local real do `transcript_path` e periodicidade (C1/C12).
